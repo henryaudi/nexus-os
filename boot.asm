@@ -1,7 +1,15 @@
 ORG  0
 BITS 16
+_start:
+    jmp short start
+    nop
+ 
+times 33 db 0
 
 start:
+    jmp 0x7C0:step2
+
+step2:
     cli 
     mov ax, 0x7C0
     mov ds, ax
@@ -10,7 +18,7 @@ start:
     mov ss, ax
     mov sp, 0x7C00
     sti 
-    
+
     mov si, message
     call print
     jmp $

@@ -1,0 +1,59 @@
+# ==========================
+# Build outputs
+# ==========================
+*.bin
+*.img
+*.iso
+*.o
+*.obj
+*.elf
+*.lst
+*.map
+*.sym
+
+# Bootloader / kernel images
+boot.bin
+kernel.bin
+disk.img
+floppy.img
+os.img
+
+# ==========================
+# QEMU / Bochs
+# ==========================
+*.log
+*.out
+*.lock
+
+# ==========================
+# VS Code
+# ==========================
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# Keep recommended extensions
+!.vscode/extensions.json
+
+# ==========================
+# Linux
+# ==========================
+*~
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ==========================
+# Debugging
+# ==========================
+core
+core.*
+*.dmp
+
+# ==========================
+# Temporary files
+# ==========================
+tmp/
+build/
+dist/

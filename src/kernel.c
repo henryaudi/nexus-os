@@ -80,6 +80,9 @@ void kernel_main()
     // Initialize the Interrupt Descriptor Table (IDT)
     idt_init();
 
+    // Enable interrupts
+    enable_interrupts();
+
     void *ptr  = kmalloc(50);
     void *ptr2 = kmalloc(5000);
     void *ptr3 = kmalloc(5600);

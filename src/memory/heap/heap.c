@@ -29,7 +29,7 @@ int heap_create(struct heap *heap, void *ptr, void *end, struct heap_table *tabl
 {
     int res = 0;
 
-    if (!heap_validate_alignment(ptr) == false || !heap_validate_alignment(end))
+    if (!heap_validate_alignment(ptr) || !heap_validate_alignment(end))
     {
         res = -EINVARG;
         goto out;

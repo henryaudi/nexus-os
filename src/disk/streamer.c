@@ -43,7 +43,7 @@ int diskstreamer_read(struct disk_stream *stream, void *out, int total)
 
     // Adjust the stream.
     stream->pos += total_to_read;
-    if (total > NEXUS_SECTOR_SIZE)
+    if (total > total_to_read)
     {
         res = diskstreamer_read(stream, out, total - total_to_read);
     }

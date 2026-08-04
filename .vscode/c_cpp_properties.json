@@ -6,8 +6,7 @@
             "compilerPath": "${env:HOME}/opt/cross/bin/i686-elf-gcc",
             "compilerArgs": [
                 "-ffreestanding",
-                "-nostdlib",
-                "-nostdinc"
+                "-nostdlib"
             ],
             "cStandard": "gnu99",
             "intelliSenseMode": "gcc-x86",

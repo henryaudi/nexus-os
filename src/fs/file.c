@@ -3,6 +3,7 @@
 #include "memory/memory.h"
 #include "memory/heap/kheap.h"
 #include "status.h"
+#include "kernel.h"
 
 struct filesystem      *filesystems[NEXUS_MAX_FILESYSTEMS];
 struct file_descriptor *file_descriptors[NEXUS_MAX_FILE_DESCRIPTORS];
@@ -34,7 +35,7 @@ void fs_insert_filesystem(struct filesystem *filesystem)
     if (!fs)
     {
         // TODO: implement panic
-        print("Failed to insert filesystem %s, no free slots available.\n", filesystem->name);
+        print("Failed to insert filesystem");
         while (1)
         {
             /* Loop forever */

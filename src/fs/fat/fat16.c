@@ -4,6 +4,7 @@
 #include "disk/streamer.h"
 #include "string/string.h"
 #include "memory/memory.h"
+#include "memory/heap/kheap.h"
 #include <stdint.h>
 
 #define NEXUS_FAT16_SIGNATURE      0x29
@@ -208,7 +209,7 @@ int fat16_get_root_directory(struct disk *disk, struct fat_private *fat_private,
         total_sectors++;
     }
 
-    int total_items = fat16_get_total_items_for_directory(fat_private, root_dir_sector_pos);
+    int total_items = fat16_get_total_items_for_directory(disk, root_dir_sector_pos);
 
     struct fat_directory_item *dir = kzalloc(root_dir_size);
     if (!dir)
@@ -245,6 +246,9 @@ int fat16_resolve(struct disk *disk)
     struct fat_private *fat_private = kzalloc(sizeof(struct fat_private));
     fat16_init_private(disk, fat_private);
 
+    disk->fs_private = fat_private;
+    disk->filesystem = &fat16_fs;
+
     struct disk_stream *stream = diskstreamer_new(disk->id);
     if (!stream)
     {
@@ -270,9 +274,6 @@ int fat16_resolve(struct disk *disk)
         res = -EIO;
         goto out;
     }
-
-    disk->fs_private = fat_private;
-    disk->filesystem = &fat16_fs;
 out:
     if (stream)
     {

@@ -291,13 +291,13 @@ out:
     return res;
 }
 
-void fat16_to_proper_string(char **out, const char **in)
+void fat16_to_proper_string(char **out, const char *in)
 {
     while (*in != 0x00 && *in != 0x20)
     {
-        **out = **in;
+        **out = *in;
         *out += 1;
-        *in += 1;
+        in += 1;
     }
 
     if (*in == 0x20)
@@ -496,6 +496,24 @@ void fat16_free_directory(struct fat_directory *directory)
     kfree(directory);
 }
 
+void fat16_fat_item_free(struct fat_item *item)
+{
+    if (item->type == FAT_ITEM_TYPE_DIRECTORY)
+    {
+        fat16_free_directory(item->directory);
+    }
+    else if (item->type == FAT_ITEM_TYPE_FILE)
+    {
+        kfree(item->item);
+    }
+    else
+    {
+        /* PANIC... */
+    }
+
+    kfree(item);
+}
+
 struct fat_directory *fat16_load_fat_directory(struct disk *disk, struct fat_directory_item *item)
 {
     int                   res         = 0;
@@ -590,6 +608,23 @@ struct fat_item *fat16_get_directory_entry(struct disk *disk, struct path_part *
     if (!root_item)
     {
         goto out;
+    }
+
+    struct path_part *next_part = path->next;
+    current_item                = root_item;
+    while (next_part != 0)
+    {
+        if (current_item->type != FAT_ITEM_TYPE_DIRECTORY)
+        {
+            current_item = 0;
+            break;
+        }
+
+        struct fat_item *tmp_item =
+            fat16_find_item_in_directory(disk, current_item->directory, next_part->part);
+        fat16_fat_item_free(current_item);
+        current_item = tmp_item;
+        next_part    = next_part->next;
     }
 
 out:

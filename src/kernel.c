@@ -95,7 +95,14 @@ void kernel_main()
     // Enable interrupts
     enable_interrupts();
 
-    char buf[20];
-    strcpy(buf, "Hello from disk!");
+    int fd = fopen("0:/hello.txt", "r");
+    if (fd)
+    {
+        print("Successfully opened file 0:/hello.txt\n");
+    }
+    else
+    {
+        print("Failed to open file 0:/hello.txt\n");
+    }
     while (1) {}
 }

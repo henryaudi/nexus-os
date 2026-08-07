@@ -481,6 +481,21 @@ static int fat16_read_internal(struct disk *disk, int starting_cluster, int offs
     return fat16_read_internal_from_stream(disk, stream, starting_cluster, offset, total, out);
 }
 
+void fat16_free_directory(struct fat_directory *directory)
+{
+    if (!directory)
+    {
+        return;
+    }
+
+    if (directory->item)
+    {
+        kfree(directory->item);
+    }
+
+    kfree(directory);
+}
+
 struct fat_directory *fat16_load_fat_directory(struct disk *disk, struct fat_directory_item *item)
 {
     int                   res         = 0;

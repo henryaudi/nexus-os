@@ -26,3 +26,16 @@ int memcmp(void *s1, void *s2, int size)
 
     return 0;
 }
+
+void *memcpy(void *dest, void *src, int len)
+{
+    char *c_dest = dest;
+    char *c_src  = src;
+
+    while (len--)
+    {
+        *c_dest++ = *c_src++;
+    }
+
+    return dest;
+}

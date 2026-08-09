@@ -1,5 +1,7 @@
 section .asm
 global gdt_load
+
+gdt_load:
     mov eax, [esp + 4]
     mov [gdt_descriptor + 2], eax
     mov ax, [esp + 8]

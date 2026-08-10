@@ -26,7 +26,8 @@
 #define NEXUS_PROGRAM_VIRTUAL_STACK_ADDRESS_END                                                    \
     (NEXUS_PROGRAM_VIRTUAL_STACK_ADDRESS_START - NEXUS_USER_PROGRAM_STACK_SIZE)
 
-#define USER_DATA_SEGMENT 0x23
-#define USER_CODE_SEGMENT 0x1B
+#define NEXUS_MAX_PROGRAM_ALLOCATIONS 1024
+#define USER_DATA_SEGMENT             0x23
+#define USER_CODE_SEGMENT             0x1B
 
 #endif

@@ -21,6 +21,8 @@ struct registers
     uint32_t ss;
 };
 
+struct process;
+
 struct task
 {
     /**
@@ -34,6 +36,11 @@ struct task
     struct registers registers;
 
     /**
+     * @brief The process associated with this task.
+     */
+    struct process *process;
+
+    /**
      * @brief The next task in the linked list of tasks.
      */
     struct task *next;
@@ -44,7 +51,7 @@ struct task
     struct task *prev;
 };
 
-struct task *task_new();
+struct task *task_new(struct process *process);
 struct task *task_current();
 struct task *task_get_next();
 int          task_free(struct task *task);

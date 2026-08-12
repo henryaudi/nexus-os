@@ -11,7 +11,7 @@ struct process
     uint16_t id;
 
     char filename[NEXUS_MAX_PATH];
-    
+
     // The main process task
     struct task *task;
 
@@ -28,6 +28,7 @@ struct process
     uint32_t size;
 };
 
+int process_load(const char *filename, struct process **process);
 int process_load_for_slot(const char *filename, struct process **process, int process_slot);
 
 #endif

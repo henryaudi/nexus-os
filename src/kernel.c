@@ -4,6 +4,8 @@
 #include "idt/idt.h"
 #include "io/io.h"
 #include "string/string.h"
+#include "task/task.h"
+#include "task/process.h"
 #include "memory/heap/kheap.h"
 #include "memory/paging/paging.h"
 #include "memory/memory.h"
@@ -14,6 +16,7 @@
 #include "disk/streamer.h"
 #include "gdt/gdt.h"
 #include "config.h"
+#include "status.h"
 
 uint16_t *video_mem    = 0;
 uint16_t  terminal_row = 0;
@@ -126,22 +129,20 @@ void kernel_main()
     kernel_chunk = paging_new_4gb(PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
 
     // Switch to kernel paging chunk
-    paging_switch(paging_4gb_chunk_get_directory(kernel_chunk));
+    paging_switch(kernel_chunk);
 
     // Enable paging
     enable_paging();
 
-    // Enable interrupts
-    enable_interrupts();
-
-    int fd = fopen("0:/hello.txt", "r");
-    if (fd)
+    struct process *process = 0;
+    int res = process_load("0:/blank.bin", &process);
+    if (res != NEXUS_ALL_OK)
     {
-        struct file_stat s;
-        fstat(fd, &s);
-        fclose(fd);
-        print("testing\n");
+        panic("Failed to load process\n");
     }
+
+    task_run_first_ever_task();
+
     while (1)
     {
     }

@@ -211,3 +211,20 @@ int task_init(struct task *task, struct process *process)
     task->process       = process;
     return 0;
 }
+
+void *task_get_stack_item(struct task *task, int index)
+{
+    void *res = 0;
+
+    uint32_t *sp_ptr = (uint32_t *)task->registers.esp;
+
+    /* Switch to the given task page */
+    task_page_task(task);
+
+    res = (void *)sp_ptr[index];
+
+    /* Switch back to the kernel page */
+    kernel_page();
+    
+    return res;
+}

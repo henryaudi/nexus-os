@@ -9,8 +9,8 @@ global user_registers
 task_return:
     mov  ebp, esp
     mov  ebx, [ebp + 4]    ; Access the structure pointer passed
-    push dword [ebx + 24]  ; Push data/stack selector
-    push dword [ebx + 40]  ; Push the stakc pointer
+    push dword [ebx + 44]  ; Push data/stack selector
+    push dword [ebx + 40]  ; Push the stack pointer
     
     pushf                  ; Push the flags register onto the stack
     pop eax

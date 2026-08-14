@@ -6,5 +6,12 @@ global _start
 
 _start:
 
-label:
-    jmp label
+    push message
+    mov eax, 1  ; Command print
+    int 0x80
+    add esp, 4
+
+    jmp $
+
+section .data
+message: db 'Userland now is talking to the kernel!', 0

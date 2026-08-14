@@ -5,6 +5,7 @@
 #include "io/io.h"
 #include "string/string.h"
 #include "task/task.h"
+#include "isr80h/isr80h.h"
 #include "task/process.h"
 #include "memory/heap/kheap.h"
 #include "memory/paging/paging.h"
@@ -82,6 +83,12 @@ void panic(const char *msg)
     }
 }
 
+void kernel_page()
+{
+    kernel_registers();
+    paging_switch(kernel_chunk);
+}
+
 struct tss            tss;
 struct gdt            gdt_real[NEXUS_TOTAL_GDT_SEGMENTS];
 struct gdt_structured gdt_structured[NEXUS_TOTAL_GDT_SEGMENTS] = {
@@ -96,8 +103,6 @@ struct gdt_structured gdt_structured[NEXUS_TOTAL_GDT_SEGMENTS] = {
 void kernel_main()
 {
     terminal_initialize();
-    print("Hello, World!\nHello World!");
-
     memset(gdt_real, 0x00, sizeof(gdt_real));
     gdt_structured_to_gdt(gdt_real, gdt_structured, NEXUS_TOTAL_GDT_SEGMENTS);
 
@@ -133,6 +138,9 @@ void kernel_main()
 
     // Enable paging
     enable_paging();
+
+    // Register kernel commands
+    isr80h_register_commands();
 
     struct process *process = 0;
     int res = process_load("0:/blank.bin", &process);

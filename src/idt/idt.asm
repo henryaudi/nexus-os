@@ -2,11 +2,14 @@ section .asm
 
 extern int21h_handler
 extern no_interrupt_handler
+extern isr80h_handler
+
 global int21h
 global no_interrupt
 global idt_load
 global enable_interrupts
 global disable_interrupts
+global isr80h_wrapper
 
 enable_interrupts:
     sti
@@ -27,17 +30,34 @@ idt_load:
     ret
 
 int21h:
-    cli
     pushad
     call int21h_handler
     popad
-    sti
     iret
 
 no_interrupt:
-    cli
     pushad
     call no_interrupt_handler
     popad
-    sti
     iret
+
+isr80h_wrapper:
+    
+    pushad  ; Pushed the general purpose registers onto the stack
+
+    ; INTERRUPE FRAME END
+
+    push esp                    ; Push stack pointer pointing to the interrupt frame
+    push eax                    ; Push the syscall number
+    call isr80h_handler
+    mov  dword[tmp_res], eax
+    add  esp, 8
+
+    ; Restore the general purpose registers for user land
+    popad
+    mov eax, [tmp_res]
+    iretd
+
+section .data
+; Inside here is stored the return result from isr80h_handler.
+tmp_res: dd 0

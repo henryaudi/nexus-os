@@ -14,4 +14,4 @@ _start:
     jmp $
 
 section .data
-message: db 'Hello World!', 0
+message: db 'Userland now is talking to the kernel!', 0

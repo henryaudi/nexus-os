@@ -1,6 +1,8 @@
 #include "keyboard.h"
 #include "io/io.h"
+#include "classic.h"
 #include <stdint.h>
+#include <stddef.h>
 
 int classic_keyboard_init();
 
@@ -19,11 +21,29 @@ struct keyboard classic_keyboard = {.name = {"Classic"}, // Classic PS/2 keyboar
 
 int classic_keyboard_init()
 {
-    outb(0x64, 0xAE);
+    outb(PS2_PORT, PS2_COMMAND_ENABLE_FIRST_PORT); // Enable the first PS/2 port
     return 0;
+}
+
+uint8_t classic_keyboard_scancode_to_char(uint8_t scancode)
+{
+    size_t size_keyboard_set_one = sizeof(keyboard_scan_set_one) / sizeof(uint8_t);
+    if (scancode >= size_keyboard_set_one)
+    {
+        return 0x00; // Invalid scancode
+    }
+
+    char c = keyboard_scan_set_one[scancode];
+    return c;
+}
+
+void classic_keyboard_handle_interrupt()
+{
+    
 }
 
 struct keyboard *classic_init()
 {
     return &classic_keyboard;
 }
+

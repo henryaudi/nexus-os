@@ -3,6 +3,7 @@ section .asm
 extern int21h_handler
 extern no_interrupt_handler
 extern isr80h_handler
+extern interrupt_handler
 
 global int21h
 global no_interrupt
@@ -41,6 +42,26 @@ no_interrupt:
     popad
     iret
 
+%macro interrupt 1
+    global int%1
+    int%1:
+        pushad
+        push esp
+        push dword %i
+        call interrupt_handler
+        add  esp, 8
+        popad
+        iret
+
+%endmacro
+
+%assign i 0
+%rep 521
+    interrupt i
+%assign i i+1
+%endrep
+
+
 isr80h_wrapper:
     
     pushad  ; Pushed the general purpose registers onto the stack
@@ -61,3 +82,14 @@ isr80h_wrapper:
 section .data
 ; Inside here is stored the return result from isr80h_handler.
 tmp_res: dd 0
+
+%macro interrupt_array_entry 1
+    dd int%1
+%endmacro
+
+interrupt_pointer_table:
+%assign i 0
+%rep 512
+    interrupt_array_entry i
+%assign i i+1
+%endrep

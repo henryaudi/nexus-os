@@ -5,12 +5,12 @@ extern no_interrupt_handler
 extern isr80h_handler
 extern interrupt_handler
 
-global int21h
 global no_interrupt
 global idt_load
 global enable_interrupts
 global disable_interrupts
 global isr80h_wrapper
+global interrupt_pointer_table
 
 enable_interrupts:
     sti
@@ -30,12 +30,6 @@ idt_load:
     pop  ebp
     ret
 
-int21h:
-    pushad
-    call int21h_handler
-    popad
-    iret
-
 no_interrupt:
     pushad
     call no_interrupt_handler
@@ -47,7 +41,7 @@ no_interrupt:
     int%1:
         pushad
         push esp
-        push dword %i
+        push dword %1
         call interrupt_handler
         add  esp, 8
         popad
@@ -56,7 +50,7 @@ no_interrupt:
 %endmacro
 
 %assign i 0
-%rep 521
+%rep 512
     interrupt i
 %assign i i+1
 %endrep

@@ -147,6 +147,17 @@ out:
     return res;
 }
 
+int process_load_switch(const char *filename, struct process **process)
+{
+    int res = process_load(filename, process);
+    if (res == 0)
+    {
+        process_switch(*process);
+    }
+    
+    return res;
+}
+
 /**
  * @brief Load a process from a file into a specific process slot.
  *

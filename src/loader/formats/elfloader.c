@@ -9,7 +9,7 @@
 #include "kernel.h"
 #include "config.h"
 
-const char *elf_signature[] = {0x7F, 'E', 'L', 'F'};
+const char elf_signature[] = {0x7F, 'E', 'L', 'F'};
 
 static bool elf_valid_signature(void *buf)
 {
@@ -102,7 +102,7 @@ int elf_validate_loaded(struct elf_header *header)
     return (elf_valid_signature(header) && elf_valid_class(header) && elf_valid_encoding(header) &&
             elf_has_program_header(header))
                ? NEXUS_ALL_OK
-               : -EINVARG;
+               : -EINFORMAT;
 }
 
 int elf_process_phdr_pt_load(struct elf_file *elf_file, struct elf32_phdr *phdr)
@@ -115,9 +115,10 @@ int elf_process_phdr_pt_load(struct elf_file *elf_file, struct elf32_phdr *phdr)
     }
 
     unsigned int end_virtual_address = phdr->p_vaddr + phdr->p_filesz;
-    if (elf_file->virtual_end_address <= (void *)(end_virtual_address) || elf_file->virtual_end_address == 0x00)
+    if (elf_file->virtual_end_address <= (void *)(end_virtual_address) ||
+        elf_file->virtual_end_address == 0x00)
     {
-        elf_file->virtual_end_address = (void *)end_virtual_address;
+        elf_file->virtual_end_address  = (void *)end_virtual_address;
         elf_file->physical_end_address = elf_memory(elf_file) + phdr->p_offset + phdr->p_filesz;
     }
     return 0;
@@ -132,9 +133,11 @@ int elf_process_pheader(struct elf_file *elf_file, struct elf32_phdr *phdr)
             res = elf_process_phdr_pt_load(elf_file, phdr);
             break;
     }
+
+    return res;
 }
 
-int elf_process_pheader(struct elf_file *elf_file)
+int elf_process_pheaders(struct elf_file *elf_file)
 {
     int                res    = 0;
     struct elf_header *header = elf_header(elf_file);
@@ -156,7 +159,7 @@ int elf_process_loaded(struct elf_file *elf_file)
 {
     int                res    = 0;
     struct elf_header *header = elf_header(elf_file);
-    int                res    = elf_validate_loaded(header);
+    res                       = elf_validate_loaded(header);
     if (res < 0)
     {
         goto out;
@@ -178,7 +181,7 @@ int elf_load(const char *filename, struct elf_file **file_out)
     struct elf_file *elf_file = kzalloc(sizeof(struct elf_file));
     int              fd       = 0;
     int              res      = fopen(filename, "r");
-    if (res < 0)
+    if (res <= 0)
     {
         goto out;
     }

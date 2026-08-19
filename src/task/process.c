@@ -6,6 +6,7 @@
 #include "memory/heap/kheap.h"
 #include "string/string.h"
 #include "memory/paging/paging.h"
+#include "loader/formats/elfloader.h"
 #include "kernel.h"
 
 /* The currently running process */
@@ -73,10 +74,29 @@ static int process_load_binary(const char *filename, struct process *process)
         goto out;
     }
 
-    process->ptr  = program_data_ptr;
-    process->size = stat.filesize;
+    process->filetype = PROCESS_FILETYPE_BINARY;
+    process->ptr      = program_data_ptr;
+    process->size     = stat.filesize;
 out:
     fclose(fd);
+    return res;
+}
+
+static int process_load_elf(const char *filename, struct process *process)
+{
+    int              res      = 0;
+    struct elf_file *elf_file = 0;
+
+    res = elf_load(filename, &elf_file);
+    if (ISERR(res))
+    {
+        goto out;
+    }
+
+    process->filetype = PROCESS_FILETYPE_ELF;
+    process->elf_file = elf_file;
+
+out:
     return res;
 }
 
@@ -84,8 +104,12 @@ static int process_load_data(const char *filename, struct process *process)
 {
     int res = 0;
 
-    // TODO: Process based on the file type (e.g., ELF, binary, etc.)
-    res = process_load_binary(filename, process);
+    res = process_load_elf(filename, process);
+    if (res == -EINFORMAT)
+    {
+        res = process_load_binary(filename, process);
+    }
+
     return res;
 }
 
@@ -100,16 +124,60 @@ int process_map_binary(struct process *process)
     return res;
 }
 
+static int process_map_elf(struct process *process)
+{
+    int res = 0;
+
+    struct elf_file   *elf_file = process->elf_file;
+    struct elf_header *header   = elf_header(elf_file);
+    struct elf32_phdr *phdrs    = elf_pheader(header);
+    for (int i = 0; i < header->e_phnum; i++)
+    {
+        struct elf32_phdr *phdr              = &phdrs[i];
+        void              *phdr_phys_address = elf_phdr_phys_address(elf_file, phdr);
+        int                flags             = PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL;
+
+        /* If the program header has the right flag the page is writable */
+        if (phdr->p_flags & PF_W)
+        {
+            flags |= PAGING_IS_WRITEABLE;
+        }
+        res = paging_map_to(process->task->page_directory,
+                            paging_align_to_lower_page((void *)phdr->p_vaddr),
+                            paging_align_to_lower_page(phdr_phys_address),
+                            paging_align_address(phdr_phys_address + phdr->p_filesz), flags);
+
+        if (ISERR(res))
+        {
+            break;
+        }
+    }
+
+    return res;
+}
+
 int process_map_memory(struct process *process)
 {
     int res = 0;
-    // TODO: future support for more file types.
-    res = process_map_binary(process);
+
+    switch (process->filetype)
+    {
+        case PROCESS_FILETYPE_ELF:
+            res = process_map_elf(process);
+            break;
+        case PROCESS_FILETYPE_BINARY:
+            res = process_map_binary(process);
+            break;
+        default:
+            panic("process_map_memory: invalid filetype\n");
+    }
+
     if (res < 0)
     {
         goto out;
     }
 
+    /* Map the stack */
     paging_map_to(process->task->page_directory, (void *)NEXUS_PROGRAM_VIRTUAL_STACK_ADDRESS_END,
                   process->stack,
                   paging_align_address(process->stack + NEXUS_USER_PROGRAM_STACK_SIZE),
@@ -154,7 +222,7 @@ int process_load_switch(const char *filename, struct process **process)
     {
         process_switch(*process);
     }
-    
+
     return res;
 }
 

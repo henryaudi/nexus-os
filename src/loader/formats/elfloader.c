@@ -1,7 +1,6 @@
 #include "elfloader.h"
 #include "fs/file.h"
 #include "status.h"
-#include <stdbool.h>
 #include "memory/heap/kheap.h"
 #include "memory/memory.h"
 #include "memory/paging/paging.h"
@@ -70,6 +69,11 @@ struct elf32_phdr *elf_program_header(struct elf_header *header, int index)
 struct elf32_shdr *elf_section(struct elf_header *header, int index)
 {
     return &elf_sheader(header)[index];
+}
+
+void *elf_phdr_phys_address(struct elf_file *file, struct elf32_phdr *phdr)
+{
+    return elf_memory(file) + phdr->p_offset;
 }
 
 char *elf_str_table(struct elf_header *header)

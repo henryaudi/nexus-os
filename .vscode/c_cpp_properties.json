@@ -12,7 +12,8 @@
             "intelliSenseMode": "gcc-x86",
             "includePath": [
                 "${workspaceFolder}/src",
-                "${workspaceFolder}/src/**"
+                "${workspaceFolder}/src/**",
+                "${workspaceFolder}/programs/stdlib/src"
             ],
             "browse": {
                 "path": [

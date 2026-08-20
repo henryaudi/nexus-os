@@ -6,7 +6,7 @@ int main(int argc, char **argv)
 {
     print("Hello World!\n");
     print(itoa(123456789));
-    putchar('Z');
+    printf("My age is %i\n", 29);
 
     void *ptr = malloc(512);
     free(ptr);

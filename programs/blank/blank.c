@@ -3,7 +3,8 @@
 
 int main(int argc, char **argv)
 {
-    print("Hello World");
+    print("Hello World!\n");
+    print(itoa(123456789));
 
     void *ptr = malloc(512);
     free(ptr);

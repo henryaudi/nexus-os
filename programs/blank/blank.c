@@ -1,10 +1,12 @@
 #include "nexusos.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 int main(int argc, char **argv)
 {
     print("Hello World!\n");
     print(itoa(123456789));
+    putchar('Z');
 
     void *ptr = malloc(512);
     free(ptr);

@@ -1,5 +1,5 @@
-#ifndef STDLIB_H
-#define STDLIB_H
+#ifndef NEXUS_STDLIB_H
+#define NEXUS_STDLIB_H
 
 #include <stddef.h>
 

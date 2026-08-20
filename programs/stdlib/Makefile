@@ -1,4 +1,4 @@
-FILES=./build/start.o 
+FILES=./build/start.o ./build/nexusos.o
 INCLUDES=
 
 all: ${FILES}
@@ -6,6 +6,9 @@ all: ${FILES}
 
 ./build/start.o: ./src/start.asm
 	nasm -f elf ./src/start.asm -o ./build/start.o
+
+./build/nexusos.o: ./src/nexusos.asm
+	nasm -f elf ./src/nexusos.asm -o ./build/nexusos.o
 
 clean:
 	rm -rf ${FILES}

@@ -3,10 +3,10 @@
 
 void *malloc(size_t size)
 {
-    return 0;
+    return nexus_malloc(size);
 }
 
 void  free(void *ptr)
 {
-    
+
 }

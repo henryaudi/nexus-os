@@ -75,6 +75,45 @@ void *process_malloc(struct process *process, size_t size)
     return ptr;
 }
 
+static bool process_is_process_pointer(struct process *process, void *ptr)
+{
+    for (int i = 0; i < NEXUS_MAX_PROGRAM_ALLOCATIONS; i++)
+    {
+        if (process->allocations[i] == ptr)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static void process_allocation_unjoin(struct process *process, void *ptr)
+{
+    for (int i = 0; i < NEXUS_MAX_PROGRAM_ALLOCATIONS; i++)
+    {
+        if (process->allocations[i] == ptr)
+        {
+            process->allocations[i] = 0x00;
+            break;
+        }
+    }
+}
+
+void process_free(struct process *process, void *ptr)
+{
+    if (!process_is_process_pointer(process, ptr))
+    {
+        /* It's not this process's pointer, we cannot free it */
+        return;
+    }
+
+    /* Unjoin the allocation */
+    process_allocation_unjoin(process, ptr);
+    /* Free the memory */
+    kfree(ptr);
+}
+
 static int process_load_binary(const char *filename, struct process *process)
 {
     int res = 0;

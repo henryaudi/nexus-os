@@ -1,4 +1,4 @@
-FILES = ./build/kernel.asm.o ./build/kernel.o ./build/loader/formats/elf.o ./build/loader/formats/elfloader.o ./build/disk/disk.o ./build/isr80h/misc.o ./build/isr80h/io.o ./build/keyboard/keyboard.o ./build/keyboard/classic.o ./build/isr80h/isr80h.o ./build/disk/streamer.o ./build/task/process.o ./build/task/task.o ./build/fs/pparser.o ./build/fs/file.o ./build/fs/fat/fat16.o ./build/string/string.o ./build/idt/idt.asm.o ./build/task/tss.asm.o ./build/task/task.asm.o ./build/idt/idt.o ./build/memory/memory.o ./build/io/io.asm.o ./build/gdt/gdt.o ./build/gdt/gdt.asm.o ./build/memory/heap/heap.o ./build/memory/heap/kheap.o ./build/memory/paging/paging.o ./build/memory/paging/paging.asm.o
+FILES = ./build/kernel.asm.o ./build/kernel.o ./build/loader/formats/elf.o ./build/loader/formats/elfloader.o ./build/disk/disk.o ./build/isr80h/misc.o ./build/isr80h/io.o ./build/isr80h/heap.o ./build/keyboard/keyboard.o ./build/keyboard/classic.o ./build/isr80h/isr80h.o ./build/disk/streamer.o ./build/task/process.o ./build/task/task.o ./build/fs/pparser.o ./build/fs/file.o ./build/fs/fat/fat16.o ./build/string/string.o ./build/idt/idt.asm.o ./build/task/tss.asm.o ./build/task/task.asm.o ./build/idt/idt.o ./build/memory/memory.o ./build/io/io.asm.o ./build/gdt/gdt.o ./build/gdt/gdt.asm.o ./build/memory/heap/heap.o ./build/memory/heap/kheap.o ./build/memory/paging/paging.o ./build/memory/paging/paging.asm.o
 INCLUDES = -I./src
 FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
 
@@ -30,20 +30,23 @@ all: ./bin/boot.bin ./bin/kernel.bin user_programs
 ./build/idt/idt.asm.o: ./src/idt/idt.asm
 	nasm -f elf -g ./src/idt/idt.asm -o ./build/idt/idt.asm.o
 
-./build/isr80h/misc.o: ./src/isr80h/misc.c
-	i686-elf-gcc $(INCLUDES) -I./src/isr80h $(FLAGS) -std=gnu99 -c ./src/isr80h/misc.c -o ./build/isr80h/misc.o
-
 ./build/keyboard/keyboard.o: ./src/keyboard/keyboard.c
 	i686-elf-gcc $(INCLUDES) -I./src/keyboard $(FLAGS) -std=gnu99 -c ./src/keyboard/keyboard.c -o ./build/keyboard/keyboard.o
 
 ./build/keyboard/classic.o: ./src/keyboard/classic.c
 	i686-elf-gcc $(INCLUDES) -I./src/keyboard $(FLAGS) -std=gnu99 -c ./src/keyboard/classic.c -o ./build/keyboard/classic.o
 
+./build/isr80h/heap.o: ./src/isr80h/heap.c
+	i686-elf-gcc $(INCLUDES) -I./src/isr80h $(FLAGS) -std=gnu99 -c ./src/isr80h/heap.c -o ./build/isr80h/heap.o
+
 ./build/isr80h/io.o: ./src/isr80h/io.c
 	i686-elf-gcc $(INCLUDES) -I./src/isr80h $(FLAGS) -std=gnu99 -c ./src/isr80h/io.c -o ./build/isr80h/io.o
 
 ./build/isr80h/isr80h.o: ./src/isr80h/isr80h.c
 	i686-elf-gcc $(INCLUDES) -I./src/isr80h $(FLAGS) -std=gnu99 -c ./src/isr80h/isr80h.c -o ./build/isr80h/isr80h.o
+
+./build/isr80h/misc.o: ./src/isr80h/misc.c
+	i686-elf-gcc $(INCLUDES) -I./src/isr80h $(FLAGS) -std=gnu99 -c ./src/isr80h/misc.c -o ./build/isr80h/misc.o
 
 ./build/idt/idt.o: ./src/idt/idt.c
 	i686-elf-gcc $(INCLUDES) -I./src/idt $(FLAGS) -std=gnu99 -c ./src/idt/idt.c -o ./build/idt/idt.o
@@ -109,9 +112,11 @@ all: ./bin/boot.bin ./bin/kernel.bin user_programs
 	i686-elf-gcc $(INCLUDES) -I./src/string $(FLAGS) -std=gnu99 -c ./src/string/string.c -o ./build/string/string.o
 
 user_programs:
+	cd ./programs/stdlib && $(MAKE) all
 	cd ./programs/blank && $(MAKE) all
 
 user_programs_clean:
+	cd ./programs/stdlib && $(MAKE) clean
 	cd ./programs/blank && $(MAKE) clean
 
 clean: user_programs_clean

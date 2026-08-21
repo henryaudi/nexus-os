@@ -3,7 +3,7 @@
 section .asm
 
 global print:function
-global getkey:function
+global nexus_getkey:function
 global nexus_malloc:function
 global nexus_free:function
 global nexus_putchar:function
@@ -21,8 +21,8 @@ print:
     pop  ebp
     ret
 
-; int getkey()
-getkey:
+; int nexus_getkey()
+nexus_getkey:
     push ebp
     mov  ebp, esp
     mov  eax, 2  ; Command getkey 

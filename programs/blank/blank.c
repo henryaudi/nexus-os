@@ -1,6 +1,7 @@
 #include "nexusos.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include <stdbool.h>
 
 int main(int argc, char **argv)
 {
@@ -10,12 +11,14 @@ int main(int argc, char **argv)
 
     void *ptr = malloc(512);
     free(ptr);
+
+    char buf[1024];
+    nexus_terminal_readline(buf, sizeof(buf), true);
+    print(buf);
+    
+    print("\nExiting...\n");
     while (1)
     {
-        if (getkey() != 0)
-        {
-            print("Key pressed\n");
-        }
     }
     return 0;
 }

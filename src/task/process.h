@@ -10,6 +10,12 @@
 #define PROCESS_FILETYPE_BINARY 1
 typedef unsigned char PROCESS_FILETYPE;
 
+struct process_allocation
+{
+    void *ptr;
+    size_t size;
+};
+
 struct process
 {
     // The process ID
@@ -21,7 +27,7 @@ struct process
     struct task *task;
 
     // Track all the allocations made by the process
-    void *allocations[NEXUS_MAX_PROGRAM_ALLOCATIONS];
+    struct process_allocation allocations[NEXUS_MAX_PROGRAM_ALLOCATIONS];
 
     PROCESS_FILETYPE filetype;
 

@@ -5,13 +5,11 @@
 
 int main(int argc, char **argv)
 {
-    printf("NexusOS (c) 2026 Designed by SuperHard Inc., UT, USA \n");
-    char words[] = "Hello how are you";
-    const char *token = strtok(words, " ");
-    while (token)
+    char *ptr = malloc(20);
+    strcpy(ptr, "Hello, World!");
+    print(ptr);
+    while (1)
     {
-        printf("Token: %s\n", token);
-        token = strtok(0, " ");
     }
     return 0;
 }

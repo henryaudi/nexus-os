@@ -8,6 +8,7 @@ global nexus_malloc:function
 global nexus_free:function
 global nexus_putchar:function
 global nexus_process_load_start:function
+global nexus_process_get_arguments:function
 
 ; void print(const char* filename)
 print:
@@ -70,6 +71,17 @@ nexus_process_load_start:
     mov  ebp, esp
     mov  eax, 6  ; COMMAND6 - process_load_start (start a process)
     push dword[ebp + 8]  ; Variable "filename"
+    int  0x80
+    add  esp, 4
+    pop  ebp
+    ret
+
+; void nexus_process_get_arguments(struct process_arguments *args)
+nexus_process_get_arguments:
+    push ebp
+    mov  ebp, esp
+    mov  eax, 8  ; COMMAND8 - process_get_arguments
+    push dword[ebp + 8]  ; Variable arguments
     int  0x80
     add  esp, 4
     pop  ebp

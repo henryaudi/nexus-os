@@ -5,13 +5,10 @@
 
 int main(int argc, char **argv)
 {
-    char *ptr = malloc(20);
-    strcpy(ptr, "Hello, World!");
-    print(ptr);
-    free(ptr);
+    struct process_arguments arguments;
+    nexus_process_get_arguments(&arguments);
 
-    ptr[0] = 'B';
-
+    printf("%i %s\n", arguments.argc, arguments.argv[0]);
     while (1)
     {
     }

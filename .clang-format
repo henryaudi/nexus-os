@@ -1,0 +1,41 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+# Indentation
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+IndentCaseLabels: true
+
+# Braces on their own line, matching the existing kernel sources
+BreakBeforeBraces: Allman
+
+# uint16_t *video_mem, not uint16_t* video_mem
+PointerAlignment: Right
+DerivePointerAlignment: false
+
+# Preserve the aligned-value style already used for globals and defines
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveMacros: Consecutive
+# Line up member names in struct declarations, not just their comments
+AlignConsecutiveDeclarations: Consecutive
+AlignTrailingComments: true
+
+# Keep every statement and function body on its own lines
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+
+# Include order is load-bearing in freestanding code, so leave it alone
+SortIncludes: Never
+
+ColumnLimit: 100
+ReflowComments: true
+PenaltyExcessCharacter: 1000000
+SpaceAfterCStyleCast: false
+MaxEmptyLinesToKeep: 1
+InsertNewlineAtEOF: true

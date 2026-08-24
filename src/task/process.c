@@ -46,7 +46,7 @@ static int process_find_free_allocation_index(struct process *process)
     int res = -ENOMEM;
     for (int i = 0; i < NEXUS_MAX_PROGRAM_ALLOCATIONS; i++)
     {
-        if (process->allocations[i] == 0)
+        if (process->allocations[i].ptr == 0)
         {
             res = i;
             break;
@@ -61,25 +61,42 @@ void *process_malloc(struct process *process, size_t size)
     void *ptr = kzalloc(size);
     if (!ptr)
     {
-        return 0;
+        goto out_err;
     }
 
     int index = process_find_free_allocation_index(process);
     if (index < 0)
     {
-        return 0;
+        goto out_err;
     }
 
-    process->allocations[index] = ptr;
+    int res =
+        paging_map_to(process->task->page_directory, ptr, ptr, paging_align_address(ptr + size),
+                      PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
+    if (res < 0)
+    {
+        goto out_err;
+    }
+
+    process->allocations[index].ptr  = ptr;
+    process->allocations[index].size = size;
 
     return ptr;
+
+out_err:
+    if (ptr)
+    {
+        kfree(ptr);
+    }
+
+    return 0;
 }
 
 static bool process_is_process_pointer(struct process *process, void *ptr)
 {
     for (int i = 0; i < NEXUS_MAX_PROGRAM_ALLOCATIONS; i++)
     {
-        if (process->allocations[i] == ptr)
+        if (process->allocations[i].ptr == ptr)
         {
             return true;
         }
@@ -92,24 +109,110 @@ static void process_allocation_unjoin(struct process *process, void *ptr)
 {
     for (int i = 0; i < NEXUS_MAX_PROGRAM_ALLOCATIONS; i++)
     {
-        if (process->allocations[i] == ptr)
+        if (process->allocations[i].ptr == ptr)
         {
-            process->allocations[i] = 0x00;
-            break;
+            process->allocations[i].ptr  = 0x00;
+            process->allocations[i].size = 0;
         }
     }
 }
 
+static struct process_allocation *process_get_allocation_by_addr(struct process *process,
+                                                                 void           *addr)
+{
+    for (int i = 0; i < NEXUS_MAX_PROGRAM_ALLOCATIONS; i++)
+    {
+        if (process->allocations[i].ptr == addr)
+        {
+            return &process->allocations[i];
+        }
+    }
+
+    return 0;
+}
+
+void process_get_arguments(struct process *process, int *argc, char ***argv)
+{
+    *argc = process->arguments.argc;
+    *argv = process->arguments.argv;
+}
+
+int process_count_command_arguments(struct command_argument *root_argument)
+{
+    struct command_argument *current = root_argument;
+    int cnt = 0;
+    
+    while (current)
+    {
+        cnt++;
+        current = current->next;
+    }
+
+    return cnt;
+}
+
+int process_inject_arguments(struct process *process, struct command_argument *root_argument)
+{
+    int res = 0;
+    struct command_argument *current = root_argument;
+    int i = 0;
+    int argc = process_count_command_arguments(root_argument);
+    if (argc == 0)
+    {
+        res = -EIO;
+        goto out;
+    }
+
+    char **argv = process_malloc(process, sizeof(const char *) * argc);
+    if (!argv)
+    {
+        res = -ENOMEM;
+        goto out;
+    }
+
+    while (current)
+    {
+        char *argument_str = process_malloc(process, sizeof(current->argument));
+        if (!argument_str)
+        {
+            res = -ENOMEM;
+            goto out;
+        }
+
+        strncpy(argument_str, current->argument, sizeof(current->argument));
+        argv[i] = argument_str;
+        current = current->next;
+        i++;
+    }
+
+    process->arguments.argc = argc;
+    process->arguments.argv = argv;
+
+out:
+    return res;
+}
+
 void process_free(struct process *process, void *ptr)
 {
-    if (!process_is_process_pointer(process, ptr))
+    /* Unlink the pages from the proces for the given address */
+    struct process_allocation *allocation = process_get_allocation_by_addr(process, ptr);
+    if (!allocation)
     {
-        /* It's not this process's pointer, we cannot free it */
+        // The given pointer is not a valid allocation for this process.
+        return;
+    }
+
+    /* Unmap it */
+    int res = paging_map_to(process->task->page_directory, allocation->ptr, allocation->ptr,
+                            paging_align_address(allocation->ptr + allocation->size), 0x00);
+    if (res < 0)
+    {
         return;
     }
 
     /* Unjoin the allocation */
     process_allocation_unjoin(process, ptr);
+
     /* Free the memory */
     kfree(ptr);
 }

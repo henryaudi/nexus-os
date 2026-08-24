@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define CLASSIC_KEYBOARD_CAPSLOCK 0x3A
+#define ASCII_UPPER_TO_LOWER(c)   ((c) + 32)
+
 int  classic_keyboard_init();
 void classic_keyboard_handle_interrupt();
 
@@ -25,6 +28,10 @@ struct keyboard classic_keyboard = {.name = {"Classic"}, // Classic PS/2 keyboar
 int classic_keyboard_init()
 {
     idt_register_interrupt_callback(ISR_KEYBOARD_INTERRUPT, classic_keyboard_handle_interrupt);
+
+    /* Initialize keyboard with caplocks off (lower-case) */
+    keyboard_set_capslock(&classic_keyboard, KEYBOARD_CAPS_LOCK_OFF);
+
     outb(PS2_PORT, PS2_COMMAND_ENABLE_FIRST_PORT); // Enable the first PS/2 port
     return 0;
 }
@@ -38,6 +45,13 @@ uint8_t classic_keyboard_scancode_to_char(uint8_t scancode)
     }
 
     char c = keyboard_scan_set_one[scancode];
+    if (keyboard_get_capslock(&classic_keyboard) == KEYBOARD_CAPS_LOCK_OFF)
+    {
+        if (c >= 'A' && c <= 'Z')
+        {
+            c = ASCII_UPPER_TO_LOWER(c);
+        }
+    }
     return c;
 }
 
@@ -54,6 +68,14 @@ void classic_keyboard_handle_interrupt()
     if (scancode & CLASSIC_KEYBOARD_KEY_RELEASED)
     {
         return; // We don't care about key releases FOR NOW
+    }
+
+    if (scancode == CLASSIC_KEYBOARD_CAPSLOCK)
+    {
+        KEYBOARD_CAPS_LOCK_STATE old_state = keyboard_get_capslock(&classic_keyboard);
+        keyboard_set_capslock(&classic_keyboard, old_state == KEYBOARD_CAPS_LOCK_OFF
+                                                     ? KEYBOARD_CAPS_LOCK_ON
+                                                     : KEYBOARD_CAPS_LOCK_OFF);
     }
 
     uint8_t c = classic_keyboard_scancode_to_char(scancode);

@@ -28,4 +28,5 @@ struct command_argument *nexus_parse_command(const char *command, int max);
 void                     nexus_process_get_arguments(struct process_arguments *args);
 int                      nexus_system(struct command_argument *argument);
 int                      nexus_system_run(const char *command);
+void                     nexus_exit();
 #endif

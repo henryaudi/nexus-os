@@ -2,6 +2,7 @@
 #include "config.h"
 #include "memory/memory.h"
 #include "kernel.h"
+#include "task/process.h"
 #include "task/task.h"
 #include "io/io.h"
 #include "status.h"
@@ -53,6 +54,21 @@ void idt_set(int interrupt_num, void *address)
     desc->offset_2        = (uint32_t)address >> 16;
 }
 
+void idt_handle_exception()
+{
+    process_terminate(task_current()->process);
+    task_next();
+}
+
+void idt_clock()
+{
+    /* Acknowledge the clock interrupt */
+    outb(0x20, 0x20);
+
+    /* Switch to the next task */
+    task_next();
+}
+
 void idt_init()
 {
     memset(idt_descriptors, 0, sizeof(idt_descriptors));
@@ -67,6 +83,13 @@ void idt_init()
     idt_set(0, idt_zero);
     idt_set(0x80, isr80h_wrapper);
 
+    for (int i = 0; i < 0x20; i++)
+    {
+        idt_register_interrupt_callback(i, idt_handle_exception);
+    }
+
+    // Register the clock interrupt handler
+    idt_register_interrupt_callback(0x20, idt_clock);
     // Load the IDT.
     idt_load(&idtr_descriptor);
 }
